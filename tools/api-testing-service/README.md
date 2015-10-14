@@ -37,5 +37,5 @@ go to:
 To use the test FluidHub service in OpenFLUID unit tests, put the following line (adapted to your configuration) in a `CMake.in.config.cmake` file:
 
 ```
-SET(TESTS_FLUIDHUB_URL "http://my.server.org/fluidhubapi-testing/")
+SET(TESTS_FLUIDHUB_URL "http://my.server.org/fluidhub-api-testing/")
 ```
