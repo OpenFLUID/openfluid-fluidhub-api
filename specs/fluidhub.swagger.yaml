@@ -1,0 +1,399 @@
+swagger: '2.0'
+info:
+  title: OpenFLUID FluidHub API
+  description: >
+    API for FluidHub services
+
+
+    As the API is still under active development, some methods and/or paths may be unimplemented
+
+
+  version: 0.5-20151014
+  contact:
+    name: Jean-Christophe Fabre
+    url: http://www.openfluid-project.org
+    email: contact@openfluid-project.org
+schemes:
+  - http
+host: www.openfluid-project.org
+basePath: /resources/fluidhub-api/testing/
+
+#############################################################################
+#############################################################################
+
+paths:
+  /:
+    get:
+      summary: General information
+      description: |
+        Returns general information about the FluidHub.
+      produces:
+        - application/json
+      tags:
+        - general
+      responses:
+        200:
+          description: a set of informations
+          schema:
+            type: object
+            properties:
+              nature:
+                type: string
+                example: 'OpenFLUID FluidHub'
+              name:
+                type: string
+                example: 'This is my hub...'
+              api-version:
+                type: string
+                example: '1.1-20151008'
+              capabilities:
+                type: array
+                items:
+                  type: string
+                  example: ['news','wareshub']
+              status:
+                  type: string
+                  example: "production"
+
+#############################################################################
+
+  /wares:
+    get:
+      summary: List of available wares
+      produces:
+        - application/json
+      tags:
+        - wares
+      responses:
+        200:
+          description: 'OK'
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                simulators:
+                  type: array
+                  items:
+                    type: string
+                observers:
+                  type: array
+                  items:
+                    type: string
+                builderexts:
+                    type: array
+                    items:
+                      type: string
+
+#############################################################################
+
+  /wares/{waretype}:
+    get:
+      summary: Get detailed list of available simulators
+      produces:
+        - application/json
+      tags:
+        - wares
+      parameters:
+        - in: path
+          name: waretype
+          required: true
+          type: string
+          enum: ["simulators","observers","builderexts"]
+        - name: username
+          description: the username for git URL
+          in: query
+          type: string
+      responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/WaresDetails'
+
+#############################################################################
+
+  /wares/{waretype}/{wareid}:
+    put:
+      summary: Create a new ware
+      tags:
+        - wares
+      consumes:
+        - application/json
+      parameters:
+        - in: path
+          name: waretype
+          required: true
+          type: string
+          enum: ["simulators","observers","builderexts"]
+        - in: path
+          name: wareid
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/WareDefinition'
+      responses:
+        201:
+          description: 'Created'
+        400:
+          description: 'Already existing'
+        401:
+          description: 'Unauthorized'
+        403:
+          description: 'Forbidden'
+        501:
+          description: 'Not implemented'
+
+    patch:
+      summary: Update a new ware
+      tags:
+        - wares
+      consumes:
+        - application/json
+      parameters:
+        - in: path
+          name: waretype
+          required: true
+          type: string
+          enum: ["simulators","observers","builderexts"]
+        - in: path
+          name: wareid
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/WareDefinition'
+      responses:
+        201:
+          description: 'Updated'
+        400:
+          description: 'Not found'
+        401:
+          description: 'Unauthorized'
+        403:
+          description: 'Forbidden'
+        501:
+          description: 'Not implemented'
+
+    delete:
+      summary: Delete an existing ware
+      tags:
+        - wares
+      parameters:
+        - in: path
+          name: wareid
+          required: true
+          type: string
+          enum: ["simulators","observers","builderexts"]
+        - in: path
+          name: wareid
+          required: true
+          type: string
+      responses:
+        200:
+          description: 'Deleted'
+        400:
+          description: 'Not found'
+        401:
+          description: 'Unauthorized'
+        403:
+          description: 'Forbidden'
+        501:
+          description: 'Not implemented'
+
+#############################################################################
+
+  /wares/{waretype}/{wareid}/git:
+    get:
+      summary: Get details about git repository
+      produces:
+        - application/json
+      tags:
+        - wares
+      parameters:
+        - in: path
+          name: waretype
+          required: true
+          type: string
+          enum: ["simulators","observers","builderexts"]
+        - in: path
+          name: wareid
+          required: true
+          type: string
+      responses:
+        501:
+          description: 'Not implemented'
+
+#############################################################################
+
+  /wares/{waretype}/{wareid}/git/{branch}:
+    get:
+      summary: Get details about git branch
+      produces:
+        - application/json
+      tags:
+        - wares
+      parameters:
+        - in: path
+          name: waretype
+          required: true
+          type: string
+          enum: ["simulators","observers","builderexts"]
+        - in: path
+          name: wareid
+          required: true
+          type: string
+        - in: path
+          name: branch
+          required: true
+          type: string
+      responses:
+        501:
+          description: 'Not implemented'
+
+#############################################################################
+
+  /wares/{waretype}/{wareid}/git/{branch}/commits:
+    get:
+      summary: Get commits list
+      produces:
+        - application/json
+      tags:
+        - wares
+      parameters:
+        - in: path
+          name: waretype
+          required: true
+          type: string
+          enum: ["simulators","observers","builderexts"]
+        - in: path
+          name: wareid
+          required: true
+          type: string
+        - in: path
+          name: branch
+          required: true
+          type: string
+      responses:
+        501:
+          description: 'Not implemented'
+
+#############################################################################
+
+  /wares/{waretype}/{wareid}/git/{branch}/issues:
+    get:
+      summary: Get issues list
+      produces:
+        - application/json
+      tags:
+        - wares
+      parameters:
+        - in: path
+          name: waretype
+          required: true
+          type: string
+          enum: ["simulators","observers","builderexts"]
+        - in: path
+          name: wareid
+          required: true
+          type: string
+        - in: path
+          name: branch
+          required: true
+          type: string
+      responses:
+        501:
+          description: 'Not implemented'
+
+#############################################################################
+
+  /news:
+    get:
+      summary: News
+      produces:
+        - application/rss+xml
+      tags:
+        - news
+      responses:
+        200:
+          description: the news
+      parameters:
+        - name: lang
+          description: The requested language for the news
+          in: query
+          type: string
+
+#############################################################################
+#############################################################################
+
+definitions:
+  WaresDetails:
+    type: object
+    properties:
+      <wareid>:
+        type: object
+        properties:
+          shortdesc:
+            type: string
+            example: 'this is a ware'
+          git-url:
+            type: string
+            example: 'https://my.repos.org/git/my.ware'
+          git-branches:
+            type: array
+            items:
+              type: string
+              example: ['openfluid-2.0','openfluid-1.7','openfluid-1.6-temp']
+          issues-counts:
+            type: object
+            description: |
+              Number of issues for higher openfluid compatibility git branch
+              sorted by issue type
+            properties:
+              bugs:
+                type: integer
+                example: 1
+              features:
+                type: integer
+                example: 0
+              reviews:
+                type: integer
+                example: 2
+          users-ro:
+            type: array
+            items:
+              type: string
+              example: '*'
+          users-rw:
+            type: array
+            items:
+              type: string
+              example: ['user1','user2']
+
+#############################################################################
+
+  WareDefinition:
+    type: object
+    properties:
+      description:
+        type: string
+        example: 'This is a new ware'
+      users-ro:
+        type: array
+        items:
+          type: string
+          example: '*'
+      users-rw:
+        type: array
+        items:
+          type: string
+          example: ['user1','user3']
+      mailinglist:
+        type: array
+        items:
+          type: string
+          example: ['user1@domain.org','user2@domain.org','user9@another.domain.org']
