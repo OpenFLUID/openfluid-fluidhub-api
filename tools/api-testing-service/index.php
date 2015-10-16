@@ -139,8 +139,8 @@ function getWaresInfos($WareType,$Username)
     $JSONContent .= "    \"issues-counts\": {\n";
     $JSONContent .= "      \"bugs\": {$WareInfos["issues-counts"]["bugs"]},\n";
     $JSONContent .= "      \"features\": {$WareInfos["issues-counts"]["features"]},\n";
-    $JSONContent .= "      \"reviewss\": {$WareInfos["issues-counts"]["reviews"]}\n";
-    $JSONContent .= "    },\n";    
+    $JSONContent .= "      \"reviews\": {$WareInfos["issues-counts"]["reviews"]}\n";
+    $JSONContent .= "    },\n";
 
     $UserList = implode("\",\"",$WareInfos["users-ro"]);
     if ($UserList != "")
