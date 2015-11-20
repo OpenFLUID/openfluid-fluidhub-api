@@ -8,7 +8,7 @@ info:
     As the API is still under active development, some methods and/or paths may be unimplemented
 
 
-  version: 0.5-20151014
+  version: 0.6-20151120
   contact:
     name: Jean-Christophe Fabre
     url: http://www.openfluid-project.org
@@ -18,8 +18,10 @@ schemes:
 host: www.openfluid-project.org
 basePath: /resources/fluidhub-api/testing/
 
+
 #############################################################################
 #############################################################################
+
 
 paths:
   /:
@@ -55,7 +57,9 @@ paths:
                   type: string
                   example: "production"
 
+
 #############################################################################
+
 
   /wares:
     get:
@@ -85,7 +89,9 @@ paths:
                     items:
                       type: string
 
+
 #############################################################################
+
 
   /wares/{waretype}:
     get:
@@ -108,11 +114,44 @@ paths:
         200:
           description: 'OK'
           schema:
-            $ref: '#/definitions/WaresDetails'
+            $ref: '#/definitions/WaresDetailedList'
+        404:
+          description: 'Not found'
+
 
 #############################################################################
 
+
   /wares/{waretype}/{wareid}:
+    get:
+      summary: Get ware infos
+      tags:
+        - wares
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: waretype
+          required: true
+          type: string
+          enum: ["simulators","observers","builderexts"]
+        - in: path
+          name: wareid
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+      responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/WareDetails'
+        404:
+          description: 'Not found'
+        501:
+          description: 'Not implemented'
+
     put:
       summary: Create a new ware
       tags:
@@ -196,7 +235,7 @@ paths:
       responses:
         200:
           description: 'Deleted'
-        400:
+        404:
           description: 'Not found'
         401:
           description: 'Unauthorized'
@@ -205,7 +244,9 @@ paths:
         501:
           description: 'Not implemented'
 
+
 #############################################################################
+
 
   /wares/{waretype}/{wareid}/git:
     get:
@@ -225,10 +266,18 @@ paths:
           required: true
           type: string
       responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/WareGitDetails'
+        404:
+          description: 'Not found'
         501:
           description: 'Not implemented'
 
+
 #############################################################################
+
 
   /wares/{waretype}/{wareid}/git/{branch}:
     get:
@@ -252,10 +301,18 @@ paths:
           required: true
           type: string
       responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/WareGitBranchDetails'
+        404:
+          description: 'Not found'
         501:
           description: 'Not implemented'
 
+
 #############################################################################
+
 
   /wares/{waretype}/{wareid}/git/{branch}/commits:
     get:
@@ -279,10 +336,18 @@ paths:
           required: true
           type: string
       responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/WareGitBranchCommitsDetails'
+        404:
+          description: 'Not found'
         501:
           description: 'Not implemented'
 
+
 #############################################################################
+
 
   /wares/{waretype}/{wareid}/git/{branch}/issues:
     get:
@@ -306,10 +371,18 @@ paths:
           required: true
           type: string
       responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/WareGitBranchIssuesDetails'
+        404:
+          description: 'Not found'
         501:
           description: 'Not implemented'
 
+
 #############################################################################
+
 
   /news:
     get:
@@ -327,61 +400,254 @@ paths:
           in: query
           type: string
 
+
 #############################################################################
 #############################################################################
+
 
 definitions:
-  WaresDetails:
-    type: object
-    properties:
-      <wareid>:
-        type: object
-        properties:
-          shortdesc:
+
+  WaresDetailedList:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 'my.ware'
+        shortdesc:
+          type: string
+          example: 'this is a ware'
+        git-url:
+          type: string
+          example: 'https://my.repos.org/git/my.ware'
+        git-branches:
+          type: array
+          items:
             type: string
-            example: 'this is a ware'
-          git-url:
+          example: ['openfluid-2.0','openfluid-1.7','openfluid-1.6-temp']
+        issues-counts:
+          type: object
+          description: |
+            Number of issues for higher openfluid compatibility git branch
+            sorted by issue type
+          properties:
+            bugs:
+              type: integer
+              example: 1
+            features:
+              type: integer
+              example: 0
+            reviews:
+              type: integer
+              example: 2
+        users-ro:
+          type: array
+          items:
             type: string
-            example: 'https://my.repos.org/git/my.ware'
-          git-branches:
-            type: array
-            items:
-              type: string
-              example: ['openfluid-2.0','openfluid-1.7','openfluid-1.6-temp']
-          issues-counts:
-            type: object
-            description: |
-              Number of issues for higher openfluid compatibility git branch
-              sorted by issue type
-            properties:
-              bugs:
-                type: integer
-                example: 1
-              features:
-                type: integer
-                example: 0
-              reviews:
-                type: integer
-                example: 2
-          users-ro:
-            type: array
-            items:
-              type: string
-              example: '*'
-          users-rw:
-            type: array
-            items:
-              type: string
-              example: ['user1','user2']
+          example: ['*']
+        users-rw:
+          type: array
+          items:
+            type: string
+          example: ['user1','user2']
+
 
 #############################################################################
+
+
+  WareDetails:
+    type: object
+    properties:
+      id:
+        type: string
+        example: 'my.ware'
+      shortdesc:
+        type: string
+        example: 'this is a ware'
+      users-ro:
+        type: array
+        items:
+          type: string
+        example: ['*']
+      users-rw:
+        type: array
+        items:
+          type: string
+        example: ['user1','user2','jdoe']
+
+
+#############################################################################
+
+
+  WareGitDetails:
+    type: object
+    properties:
+      id:
+        type: string
+        example: 'my.ware'
+      git-url:
+        type: string
+        example: 'https://my.repos.org/git/my.ware'
+      git-branches:
+        type: array
+        items:
+          type: string
+        example: ['openfluid-2.0','openfluid-1.7','openfluid-1.6-temp']
+      contributors:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+              example: 'John Doe'
+            email:
+              type: string
+              example: 'john.doe@foobar.org'
+            commits-count:
+              type: integer
+              example: 17
+
+
+#############################################################################
+
+
+  WareGitBranchDetails:
+    type: object
+    properties:
+      id:
+        type: string
+        example: 'my.ware'
+      git-url:
+        type: string
+        example: 'https://my.repos.org/git/my.ware'
+      git-branch:
+        type: string
+        example: 'openfluid-2.1'
+      tags:
+        type: array
+        items:
+          type: string
+        example: ['wind','surface','speed']
+      contacts:
+        type: array
+        items:
+          type: string
+        example: ['jdoe@foobar.org','jsmith@baz.com']
+      license:
+        type: string
+        example: 'GPL-3.0'
+      dev-status:
+        type: string
+        example: 'GPL-3.0'
+
+
+#############################################################################
+
+  GitCommitDetails:
+    type: object
+    properties:
+      sha:
+        type: string
+        example: '11d8394e7ad3ddcbd76a6fdbc2226510e6a438cc'
+      author-name:
+        type: string
+        example: 'john doe'
+      author-email:
+        type: string
+        example: 'jdoe@foobar.org'
+      date:
+        type: string
+        example: '20151120T145127'
+      message:
+        type: string
+        example: 'This is a bugfix\n*Fixed bug A\n*Fixed bug B'
+
+
+#############################################################################
+
+
+  WareGitBranchCommitsDetails:
+    type: object
+    properties:
+      id:
+        type: string
+        example: 'my.ware'
+      git-url:
+        type: string
+        example: 'https://my.repos.org/git/my.ware'
+      git-branch:
+        type: string
+        example: 'openfluid-2.1'
+      commits:
+        type: array
+        items:
+          $ref: '#/definitions/GitCommitDetails'
+
+
+#############################################################################
+
+
+  GitIssueDetails:
+    type: object
+    properties:
+      id:
+        type: string
+        example: '5'
+      title:
+        type: string
+        example: '5'
+      creator-name:
+        type: string
+        example: 'john doe'
+      date:
+        type: string
+        example: '20151120T145127'
+      type:
+        type: string
+        example: 'feature'
+      state:
+        enum: ['open','closed']
+        example: 'open'
+      urgency:
+        enum: ['low','normal','high']
+        example: 'normal'
+      description:
+        type: string
+        example: 'Add the brilliant new feature'
+
+
+#############################################################################
+
+
+  WareGitBranchIssuesDetails:
+    type: object
+    properties:
+      id:
+        type: string
+        example: 'my.ware'
+      git-url:
+        type: string
+        example: 'https://my.repos.org/git/my.ware'
+      git-branch:
+        type: string
+        example: 'openfluid-2.1'
+      issues:
+        type: array
+        items:
+          $ref: '#/definitions/GitIssueDetails'
+
+
+#############################################################################
+
 
   WareDefinition:
     type: object
     properties:
       description:
         type: string
-        example: 'This is a new ware'
+        example: 'This is a ware'
       users-ro:
         type: array
         items:

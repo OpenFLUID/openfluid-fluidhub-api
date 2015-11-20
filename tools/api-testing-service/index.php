@@ -114,7 +114,7 @@ function getWaresInfos($WareType,$Username)
   if ($GitUser != "")
     $GitUser .= "@";
 
-  $JSONContent = "{\n";
+  $JSONContent = "[\n";
 
   $IsFirstWare = true;
   foreach ($WaresRepos[$WareType] as $WareID => $WareInfos)
@@ -126,7 +126,8 @@ function getWaresInfos($WareType,$Username)
 
     $GitURL = str_replace("https://","https://${GitUser}",$WareInfos["git-url"]);
 
-    $JSONContent .= "  \"{$WareID}\": {\n";
+    $JSONContent .= "  {\n";
+    $JSONContent .= "    \"id\": \"{$WareID}\",\n";
     $JSONContent .= "    \"shortdesc\": \"{$WareInfos["shortdesc"]}\",\n";
     $JSONContent .= "    \"git-url\": \"{$GitURL}\",\n";
 
@@ -157,7 +158,7 @@ function getWaresInfos($WareType,$Username)
     $JSONContent .= "  }";
   }
 
-  $JSONContent .= "\n}";
+  $JSONContent .= "\n]";
 
   return $JSONContent;
 }
@@ -346,8 +347,20 @@ $app->get('/wares/:waretype',function ($waretype) use($app)
 // =====================================================================
 
 
+$app->get('/wares/:waretype/:wareid',function ($waretype,$wareid) use($app)
+{
+  echo "Not implemented";
+  $app->response->setStatus(501);
+});
+
+
+// =====================================================================
+// =====================================================================
+
+
 $app->put('/wares/:waretype/:wareid',function ($waretype,$wareid) use($app)
 {
+  echo "Not implemented";
   $app->response->setStatus(501);
 });
 
@@ -358,6 +371,7 @@ $app->put('/wares/:waretype/:wareid',function ($waretype,$wareid) use($app)
 
 $app->patch('/wares/:waretype/:wareid',function ($waretype,$wareid) use($app)
 {
+  echo "Not implemented";
   $app->response->setStatus(501);
 });
 
@@ -368,6 +382,7 @@ $app->patch('/wares/:waretype/:wareid',function ($waretype,$wareid) use($app)
 
 $app->delete('/wares/:waretype/:wareid',function ($waretype,$wareid) use($app)
 {
+  echo "Not implemented";
   $app->response->setStatus(501);
 });
 
@@ -378,6 +393,7 @@ $app->delete('/wares/:waretype/:wareid',function ($waretype,$wareid) use($app)
 
 $app->get('/wares/:waretype/:wareid/git',function ($waretype,$wareid) use($app)
 {
+  echo "Not implemented";
   $app->response->setStatus(501);
 });
 
@@ -388,6 +404,7 @@ $app->get('/wares/:waretype/:wareid/git',function ($waretype,$wareid) use($app)
 
 $app->get('/wares/:waretype/:wareid/git/:branch',function ($waretype,$wareid,$branch) use($app)
 {
+  echo "Not implemented";
   $app->response->setStatus(501);
 });
 
@@ -398,6 +415,7 @@ $app->get('/wares/:waretype/:wareid/git/:branch',function ($waretype,$wareid,$br
 
 $app->get('/wares/:waretype/:wareid/git/:branch/issues',function ($waretype,$wareid,$branch) use($app)
 {
+  echo "Not implemented";
   $app->response->setStatus(501);
 });
 
@@ -408,6 +426,7 @@ $app->get('/wares/:waretype/:wareid/git/:branch/issues',function ($waretype,$war
 
 $app->get('/wares/:waretype/:wareid/git/:branch/commits',function ($waretype,$wareid,$branch) use($app)
 {
+  echo "Not implemented";
   $app->response->setStatus(501);
 });
 
@@ -417,9 +436,10 @@ $app->get('/wares/:waretype/:wareid/git/:branch/commits',function ($waretype,$wa
 
 
 // handle errors
-$app->notFound(function ()
+$app->notFound(function () use ($app)
 {
-  header('HTTP/1.1 400 Bad Request',true,400);
+  echo "Not found";
+  $app->response->setStatus(404);
 });
 
 
