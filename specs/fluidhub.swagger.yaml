@@ -5,10 +5,10 @@ info:
     API for FluidHub services
 
 
-    As the API is still under active development, some methods and/or paths may be unimplemented
+    As the API is still under development, some methods and/or paths may be unimplemented
 
 
-  version: 0.6-20151120
+  version: 0.7-20151125
   contact:
     name: Jean-Christophe Fabre
     url: http://www.openfluid-project.org
@@ -26,9 +26,8 @@ basePath: /resources/fluidhub-api/testing/
 paths:
   /:
     get:
-      summary: General information
-      description: |
-        Returns general information about the FluidHub.
+      summary: Get informations about the FluidHub
+      description: Returns general information about the FluidHub service
       produces:
         - application/json
       tags:
@@ -47,15 +46,91 @@ paths:
                 example: 'This is my hub...'
               api-version:
                 type: string
-                example: '1.1-20151008'
+                example: '0.7-20151124'
               capabilities:
                 type: array
                 items:
                   type: string
-                  example: ['news','wareshub']
+                example: ['news','wares','simulations']
               status:
                   type: string
-                  example: "production"
+                  example: 'production'
+
+
+#############################################################################
+
+
+  /jobs:
+    get:
+      summary: Get list of submitted jobs, sorted by queue
+      description: Returns the list of submitted jobs (by default, latest 10 jobs)
+      produces:
+        - application/json
+      tags:
+        - jobs
+      responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/JobsList'
+        501:
+          description: 'Not implemented'
+
+
+#############################################################################
+
+  /jobs/{queuename}:
+    get:
+      summary: Get list of submitted jobs in queue
+      description: Returns the list of submitted jobs (by default, latest 100 jobs)
+      produces:
+        - application/json
+      tags:
+        - jobs
+      parameters:
+        - in: path
+          name: queuename
+          required: true
+          type: string
+          enum: ['wares','simulations']
+      responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/JobsQueueList'
+        501:
+          description: 'Not implemented'
+
+
+#############################################################################
+
+
+  /jobs/{queuename}/{jobid}:
+    get:
+      summary: Get details about a submitted job
+      produces:
+        - application/json
+      tags:
+        - jobs
+      parameters:
+        - in: path
+          name: queuename
+          required: true
+          type: string
+          enum: ['wares','simulations']
+        - in: path
+          name: jobid
+          required: true
+          type: string
+      responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/JobDetails'
+        404:
+          description: 'Not found'
+        501:
+          description: 'Not implemented'
 
 
 #############################################################################
@@ -63,7 +138,7 @@ paths:
 
   /wares:
     get:
-      summary: List of available wares
+      summary: Get list of available wares
       produces:
         - application/json
       tags:
@@ -72,22 +147,7 @@ paths:
         200:
           description: 'OK'
           schema:
-            type: array
-            items:
-              type: object
-              properties:
-                simulators:
-                  type: array
-                  items:
-                    type: string
-                observers:
-                  type: array
-                  items:
-                    type: string
-                builderexts:
-                    type: array
-                    items:
-                      type: string
+            $ref: '#/definitions/WaresList'
 
 
 #############################################################################
@@ -95,7 +155,7 @@ paths:
 
   /wares/{waretype}:
     get:
-      summary: Get detailed list of available simulators
+      summary: Get detailed list of available wares
       produces:
         - application/json
       tags:
@@ -105,7 +165,7 @@ paths:
           name: waretype
           required: true
           type: string
-          enum: ["simulators","observers","builderexts"]
+          enum: ['simulators','observers','builderexts']
         - name: username
           description: the username for git URL
           in: query
@@ -124,7 +184,7 @@ paths:
 
   /wares/{waretype}/{wareid}:
     get:
-      summary: Get ware infos
+      summary: Get ware informations
       tags:
         - wares
       produces:
@@ -134,7 +194,7 @@ paths:
           name: waretype
           required: true
           type: string
-          enum: ["simulators","observers","builderexts"]
+          enum: ['simulators','observers','builderexts']
         - in: path
           name: wareid
           required: true
@@ -163,9 +223,13 @@ paths:
           name: waretype
           required: true
           type: string
-          enum: ["simulators","observers","builderexts"]
+          enum: ['simulators','observers','builderexts']
         - in: path
           name: wareid
+          required: true
+          type: string
+        - in: header
+          name: X-Auth-Token
           required: true
           type: string
         - in: body
@@ -176,17 +240,17 @@ paths:
       responses:
         201:
           description: 'Created'
-        400:
-          description: 'Already existing'
         401:
           description: 'Unauthorized'
         403:
           description: 'Forbidden'
+        409:
+          description: 'Already exists'
         501:
           description: 'Not implemented'
 
     patch:
-      summary: Update a new ware
+      summary: Update an existing ware
       tags:
         - wares
       consumes:
@@ -196,9 +260,13 @@ paths:
           name: waretype
           required: true
           type: string
-          enum: ["simulators","observers","builderexts"]
+          enum: ['simulators','observers','builderexts']
         - in: path
           name: wareid
+          required: true
+          type: string
+        - in: header
+          name: X-Auth-Token
           required: true
           type: string
         - in: body
@@ -207,14 +275,14 @@ paths:
           schema:
             $ref: '#/definitions/WareDefinition'
       responses:
-        201:
-          description: 'Updated'
-        400:
-          description: 'Not found'
+        200:
+          description: 'OK'
         401:
           description: 'Unauthorized'
         403:
           description: 'Forbidden'
+        404:
+          description: 'Not found'
         501:
           description: 'Not implemented'
 
@@ -227,14 +295,18 @@ paths:
           name: wareid
           required: true
           type: string
-          enum: ["simulators","observers","builderexts"]
+          enum: ['simulators','observers','builderexts']
         - in: path
           name: wareid
           required: true
           type: string
+        - in: header
+          name: X-Auth-Token
+          required: true
+          type: string
       responses:
         200:
-          description: 'Deleted'
+          description: 'OK'
         404:
           description: 'Not found'
         401:
@@ -260,7 +332,7 @@ paths:
           name: waretype
           required: true
           type: string
-          enum: ["simulators","observers","builderexts"]
+          enum: ['simulators','observers','builderexts']
         - in: path
           name: wareid
           required: true
@@ -291,7 +363,7 @@ paths:
           name: waretype
           required: true
           type: string
-          enum: ["simulators","observers","builderexts"]
+          enum: ['simulators','observers','builderexts']
         - in: path
           name: wareid
           required: true
@@ -316,7 +388,7 @@ paths:
 
   /wares/{waretype}/{wareid}/git/{branch}/commits:
     get:
-      summary: Get commits list
+      summary: Get git commits list
       produces:
         - application/json
       tags:
@@ -326,7 +398,7 @@ paths:
           name: waretype
           required: true
           type: string
-          enum: ["simulators","observers","builderexts"]
+          enum: ['simulators','observers','builderexts']
         - in: path
           name: wareid
           required: true
@@ -361,7 +433,7 @@ paths:
           name: waretype
           required: true
           type: string
-          enum: ["simulators","observers","builderexts"]
+          enum: ['simulators','observers','builderexts']
         - in: path
           name: wareid
           required: true
@@ -402,10 +474,315 @@ paths:
 
 
 #############################################################################
+
+
+  /simulations:
+    get:
+      summary: List of all simulations dataspaces
+      produces:
+        - application/json
+      tags:
+        - simulations
+      responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/SimulationsInfos'
+        501:
+          description: 'Not implemented'
+
+
+#############################################################################
+
+
+  /simulations/{dataspace}:
+    get:
+      summary: Get informations about dataspace
+      produces:
+        - application/json
+      tags:
+        - simulations
+      parameters:
+        - in: path
+          name: dataspace
+          required: true
+          type: string
+      responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/DataspaceDetails'
+        501:
+          description: 'Not implemented'
+
+    put:
+      summary: Create a new dataspace
+      produces:
+        - application/json
+      tags:
+        - simulations
+      parameters:
+        - in: path
+          name: dataspace
+          required: true
+          type: string
+        - in: header
+          name: X-Auth-Token
+          required: true
+          type: string
+      responses:
+        201:
+          description: 'Created'
+          schema:
+            $ref: '#/definitions/DataspaceDefinition'
+        401:
+          description: 'Unauthorized'
+        403:
+          description: 'Forbidden'
+        409:
+          description: 'Already exists'
+        501:
+          description: 'Not implemented'
+
+    patch:
+      summary: Update an existing dataspace
+      produces:
+        - application/json
+      tags:
+        - simulations
+      parameters:
+        - in: path
+          name: dataspace
+          required: true
+          type: string
+        - in: header
+          name: X-Auth-Token
+          required: true
+          type: string
+      responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/DataspaceDefinition'
+        401:
+          description: 'Unauthorized'
+        403:
+          description: 'Forbidden'
+        404:
+          description: 'Not found'
+        501:
+          description: 'Not implemented'
+
+    delete:
+      summary: Delete an existing dataspace
+      tags:
+        - simulations
+      parameters:
+        - in: path
+          name: dataspace
+          required: true
+          type: string
+        - in: header
+          name: X-Auth-Token
+          required: true
+          type: string
+      responses:
+        200:
+          description: 'OK'
+        401:
+          description: 'Unauthorized'
+        403:
+          description: 'Forbidden'
+        404:
+          description: 'Not found'
+        501:
+          description: 'Not implemented'
+
+#############################################################################
+
+
+  /simulations/{dataspace}/{dataname}:
+    get:
+      summary: Get informations about a dataset/project
+      produces:
+        - application/json
+      tags:
+        - simulations
+      responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/DataDetails'
+        501:
+          description: 'Not implemented'
+
+
+#############################################################################
+
+
+  /simulations/{dataspace}/{dataname}/activity:
+    get:
+      summary: Getr informations about activity of a dataset/project
+      produces:
+        - application/json
+      tags:
+        - simulations
+      responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/ActivityDetails'
+        501:
+          description: 'Not implemented'
+
+
+#############################################################################
+
+
+  /simulations/{dataspace}/{dataname}/activity/start:
+    post:
+      summary: Start simulation
+      produces:
+        - application/json
+      tags:
+        - simulations
+      parameters:
+        - in: header
+          name: X-Auth-Token
+          required: true
+          type: string
+        - in: header
+          name: X-Auth-User
+          required: true
+          type: string
+      responses:
+        200:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/ActivityAction'
+        501:
+          description: 'Not implemented'
+
+
+#############################################################################
+
+
+  /simulations/{dataspace}/{dataname}/activity/stop:
+    post:
+      summary: Stop simulation
+      produces:
+        - application/json
+      tags:
+        - simulations
+      parameters:
+        - in: header
+          name: X-Auth-Token
+          required: true
+          type: string
+        - in: header
+          name: X-Auth-User
+          required: true
+          type: string
+      responses:
+        202:
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/ActivityAction'
+        501:
+          description: 'Not implemented'
+
+
+#############################################################################
 #############################################################################
 
 
 definitions:
+
+
+  JobsList:
+    type: object
+    properties:
+      wares:
+        type: string
+        schema:
+          $ref: '#/definitions/JobsQueueList'
+      simulations:
+        type: string
+        schema:
+          $ref: '#/definitions/JobsQueueList'
+
+
+#############################################################################
+
+  JobsQueueList:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '76'
+        status:
+          type: string
+          enum: ['pending','running','completed','failed','stopped']
+          example: 'completed'
+
+
+#############################################################################
+
+
+  JobDetails:
+    type: object
+    properties:
+      id:
+        type: string
+        example: '76'
+      status:
+        type: string
+        enum: ['pending','running','completed','failed','stopped']
+        example: 'completed'
+      submit-source:
+        type: string
+        example: 'pierre-testing/prj-testA' # dataspace/dataname or waretype/wareid
+      submit-action:
+        type: string
+        enum: ['create','update','delete','start','stop']
+        example: 'create'
+      submit-date:
+        type: string
+        example: '20151123T150033'
+      submit-username:
+        type: string
+        example: 'pierre'
+
+
+#############################################################################
+
+
+  WaresList:
+    type: array
+    items:
+      type: object
+      properties:
+        simulators:
+          type: array
+          items:
+            type: string
+          example: ['sim.example.1','sim.example.2','sim.example.7']
+        observers:
+          type: array
+          items:
+            type: string
+          example: ['obs.example.2','obs.example.5']
+        builderexts:
+          type: array
+          items:
+            type: string
+          example: ['bext.example.9']
+
+
+#############################################################################
+
 
   WaresDetailedList:
     type: array
@@ -414,13 +791,13 @@ definitions:
       properties:
         id:
           type: string
-          example: 'my.ware'
+          example: 'sim.example.7'
         shortdesc:
           type: string
-          example: 'this is a ware'
+          example: 'This is a an example simulator'
         git-url:
           type: string
-          example: 'https://my.repos.org/git/my.ware'
+          example: 'https://my.fluidhub.org/git/simulators/sim.example.7'
         git-branches:
           type: array
           items:
@@ -450,7 +827,7 @@ definitions:
           type: array
           items:
             type: string
-          example: ['user1','user2']
+          example: ['pierre','zoe']
 
 
 #############################################################################
@@ -461,10 +838,10 @@ definitions:
     properties:
       id:
         type: string
-        example: 'my.ware'
+        example: 'sim.example.7'
       shortdesc:
         type: string
-        example: 'this is a ware'
+        example: 'This is a an example simulator'
       users-ro:
         type: array
         items:
@@ -474,7 +851,7 @@ definitions:
         type: array
         items:
           type: string
-        example: ['user1','user2','jdoe']
+        example: ['pierre','zoe']
 
 
 #############################################################################
@@ -485,10 +862,10 @@ definitions:
     properties:
       id:
         type: string
-        example: 'my.ware'
+        example: 'sim.example.7'
       git-url:
         type: string
-        example: 'https://my.repos.org/git/my.ware'
+        example: 'https://my.fluidhub.org/git/simulators/sim.example.7'
       git-branches:
         type: array
         items:
@@ -501,10 +878,10 @@ definitions:
           properties:
             name:
               type: string
-              example: 'John Doe'
+              example: 'Pierre'
             email:
               type: string
-              example: 'john.doe@foobar.org'
+              example: 'pierre@people.org'
             commits-count:
               type: integer
               example: 17
@@ -518,13 +895,13 @@ definitions:
     properties:
       id:
         type: string
-        example: 'my.ware'
+        example: 'sim.example.7'
       git-url:
         type: string
-        example: 'https://my.repos.org/git/my.ware'
+        example: 'https://my.fluidhub.org/git/simulators/sim.example.7'
       git-branch:
         type: string
-        example: 'openfluid-2.1'
+        example: 'openfluid-2.0'
       tags:
         type: array
         items:
@@ -534,13 +911,13 @@ definitions:
         type: array
         items:
           type: string
-        example: ['jdoe@foobar.org','jsmith@baz.com']
+        example: ['pierre@people.org','marianne@users.org']
       license:
         type: string
         example: 'GPL-3.0'
       dev-status:
         type: string
-        example: 'GPL-3.0'
+        example: 'stable'
 
 
 #############################################################################
@@ -553,10 +930,10 @@ definitions:
         example: '11d8394e7ad3ddcbd76a6fdbc2226510e6a438cc'
       author-name:
         type: string
-        example: 'john doe'
+        example: 'Zoe'
       author-email:
         type: string
-        example: 'jdoe@foobar.org'
+        example: 'zoe@people.org'
       date:
         type: string
         example: '20151120T145127'
@@ -573,13 +950,13 @@ definitions:
     properties:
       id:
         type: string
-        example: 'my.ware'
+        example: 'sim.example.7'
       git-url:
         type: string
-        example: 'https://my.repos.org/git/my.ware'
+        example: 'https://my.fluidhub.org/git/simulators/sim.example.7'
       git-branch:
         type: string
-        example: 'openfluid-2.1'
+        example: 'openfluid-2.0'
       commits:
         type: array
         items:
@@ -600,7 +977,7 @@ definitions:
         example: '5'
       creator-name:
         type: string
-        example: 'john doe'
+        example: 'Maxime'
       date:
         type: string
         example: '20151120T145127'
@@ -615,7 +992,7 @@ definitions:
         example: 'normal'
       description:
         type: string
-        example: 'Add the brilliant new feature'
+        example: 'Add this brilliant new feature'
 
 
 #############################################################################
@@ -626,13 +1003,13 @@ definitions:
     properties:
       id:
         type: string
-        example: 'my.ware'
+        example: 'sim.example.7'
       git-url:
         type: string
-        example: 'https://my.repos.org/git/my.ware'
+        example: 'https://my.fluidhub.org/git/simulators/sim.example.7'
       git-branch:
         type: string
-        example: 'openfluid-2.1'
+        example: 'openfluid-2.0'
       issues:
         type: array
         items:
@@ -647,19 +1024,138 @@ definitions:
     properties:
       description:
         type: string
-        example: 'This is a ware'
+        example: 'This is a new observer'
       users-ro:
         type: array
         items:
           type: string
-          example: '*'
+        example: ['*']
       users-rw:
         type: array
         items:
           type: string
-          example: ['user1','user3']
+        example: ['maxime','marianne']
       mailinglist:
         type: array
         items:
           type: string
-          example: ['user1@domain.org','user2@domain.org','user9@another.domain.org']
+        example: ['maxime@users.org','marianne@users.org','pierre@people.org']
+
+
+#############################################################################
+
+
+  SimulationsInfos:
+    type: object
+    properties:
+      openfluid-versions:
+        type: array
+        items:
+          type: string
+        example: ['2.1','2.0']
+      dataspaces:
+        type: array
+        items:
+          type: string
+        example: ['water-survey','pierre-testing','nitrogen-cycle']
+
+
+#############################################################################
+
+
+  DataspaceDetails:
+    type: object
+    properties:
+      name:
+        type: string
+        example: 'pierre-testing'
+      projects:
+        type: array
+        items:
+          type: string
+        example: ['prj-testA','prj-testB','testC']
+      datasets:
+        type: array
+        items:
+          type: string
+        example: ['data1','data2','Etest']
+
+
+#############################################################################
+
+
+  DataDetails:
+    type: object
+    properties:
+      name:
+        type: string
+        example: 'prj-testA'
+      type:
+        type: string
+        enum: ['project','dataset']
+        example: 'project'
+
+
+#############################################################################
+
+
+  ActivityDetails:
+    type: object
+    properties:
+      name:
+        type: string
+        example: 'prj-testA'
+      type:
+        type: string
+        enum: ['project','dataset']
+        example: 'project'
+      status:
+        type: string
+        enum: ['pending','running','completed','failed','stopped']
+        example: 'completed'
+      logs-url:
+        type: string
+        example: 'https://my.fluidhub.org/jobsdata/simulations/76/logs'
+      ouputs-url:
+        type: string
+        example: 'https://my.fluidhub.org/jobsdata/simulations/76/outputs'
+
+
+#############################################################################
+
+
+  DataspaceDefinition:
+    type: object
+    properties:
+      description:
+        type: string
+        example: 'This is a dataspace'
+      users-ro:
+        type: array
+        items:
+          type: string
+        example: ['*']
+      users-rw:
+        type: array
+        items:
+          type: string
+        example: ['pierre','marianne']
+      mailinglist:
+        type: array
+        items:
+          type: string
+        example: ['pierre@people.org','marianne@users.org']
+
+
+#############################################################################
+
+
+  ActivityAction:
+    type: object
+    properties:
+      job:
+        type: string
+        example: '76'
+      ref:
+        type: string
+        example: '/jobs/simulations/76'

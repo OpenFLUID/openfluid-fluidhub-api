@@ -195,7 +195,7 @@ $app->get('/',function () use($app)
   echo "{\n";
   echo "  \"nature\" : \"OpenFLUID FluidHub\",\n";
   echo "  \"api-version\" : \"1.0.20150107\",\n";
-  echo "  \"capabilities\" : [\"news\",\"wareshub\"],\n";
+  echo "  \"capabilities\" : [\"news\",\"wares\"],\n";
   echo "  \"status\" : \"testing\",\n";
   echo "  \"name\" : \"fluidhub for testing\"\n";
   echo "}";
