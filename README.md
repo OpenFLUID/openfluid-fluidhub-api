@@ -10,5 +10,5 @@ See [Readme](specs/README.md) file in the `specs` directory for details.
 
 # Tools
 
-* [fluidhubapi-testing](tools/fluidhubapi-testing/) : fake FluidHub API service for testing FluidHub clients.
-See [Readme](tools/fluidhubapi-testing/README.md) file in the `tools/fluidhubapi-testing` directory for details.
+* [api-testing-service](tools/api-testing-service/) : fake FluidHub API service for testing FluidHub clients.
+See [Readme](tools/api-testing-service/README.md) file in the `tools/api-testing-service` directory for details.
