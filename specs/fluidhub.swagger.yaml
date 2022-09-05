@@ -9,7 +9,7 @@ info:
     ⭐ = item recently added or updated, 🚧 = items under construction, ❗ = items to review and validate
 
 
-  version: "1.0"
+  version: "1.0-202209"
   contact:
     name: the OpenFLUID team
     url: https://www.openfluid-project.org/who/
@@ -364,7 +364,7 @@ paths:
         200:
           description: 'OK'
 
-  /account/requests/access:
+  /account/requests/referential/access:
     post:
       tags:
         - account
@@ -415,7 +415,7 @@ paths:
         401:
           $ref: '#/components/responses/Unauthenticated'
 
-  /account/requests/creation:
+  /account/requests/referential/creation:
     post:
       tags:
         - account
@@ -444,7 +444,7 @@ paths:
                         id:
                           type: string
                           example: "my.obs.43"
-                        shortdesc:
+                        description:
                           type: string
                           example: "the observer 43"
               - type: object
@@ -457,7 +457,7 @@ paths:
                         name:
                           type: string
                           example: "DataX"
-                        shortdesc:
+                        description:
                           type: string
                           example: "a great dataset"
       responses:
@@ -480,14 +480,18 @@ paths:
             schema:
               type: object
               properties:
-                new_password:
+                old_password:
+                    description: "user input"
+                    type: string
+                    example: "my_old_secret_password"
+                password:
                   description: "user input"
                   type: string
-                  example: "my_secret_password"
-                new_password_confirm:
+                  example: "my_new_secret_password"
+                confirmed_password:
                   description: "user input"
                   type: string
-                  example: "my_secret_password"
+                  example: "my_new_secret_password"
               required:
                 - new_password
                 - new_password_confirm
@@ -849,7 +853,7 @@ paths:
             schema:
               type: object
               properties:
-                shortdesc:
+                description:
                   type: string
                   example: "a new description ..."
       responses:
@@ -861,6 +865,47 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         404:
           $ref: '#/components/responses/NotFound'
+
+
+  /wares/{waretype}/{wareid}/branches/{branchid}:
+    parameters:
+      - in: path
+        required: true
+        name: waretype
+        description: type of wares
+        schema:
+          type: string
+          enum: ['simulators','observers','builderexts']
+          example: simulators
+      - in: path
+        name: wareid
+        required: true
+        schema:
+          type: string
+        example: "my.simulator"
+      - in: path
+        name: branchid
+        required: true
+        schema:
+          type: string
+        example: "openfluid-2.1"
+
+    get:
+      summary: Get details of branch on ware ⭐
+      description: >
+        Details of branch include commits, tags and other information related to given branch
+      tags:
+        - reference wares
+      responses:
+        200:
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ElementGitBranch'
+        404:
+          $ref: '#/components/responses/NotFound'
+
 
 
 ##########################################################################
@@ -931,7 +976,7 @@ paths:
             schema:
               type: object
               properties:
-                shortdesc:
+                description:
                   type: string
                   example: "a new description ..."
       responses:
@@ -941,6 +986,38 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         403:
           $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /datasets/{dataname}/branches/{branchid}:
+  
+    parameters:
+      - in: path
+        name: dataname
+        required: true
+        schema:
+          type: string
+        example: "my_dataset"
+      - in: path
+        name: branchid
+        required: true
+        schema:
+          type: string
+        example: "openfluid-2.1"
+
+    get:
+      summary: Get details of branch on dataset ⭐
+      description: >
+        Details of branch include commits, tags and other information related to given branch
+      tags:
+        - reference datasets
+      responses:
+        200:
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ElementGitBranch'
         404:
           $ref: '#/components/responses/NotFound'
 
@@ -2315,6 +2392,8 @@ components:
           type: string
         organization:
           type: string
+        unixname:
+          type: string
 
     UserItem:
       allOf:
@@ -2440,10 +2519,10 @@ components:
         sha:
           type: string
           example: '11d8394e7ad3ddcbd76a6fdbc2226510e6a438cc'
-        author-name:
+        author_name:
           type: string
           example: 'Zoe'
-        author-email:
+        author_email:
           type: string
           example: 'zoe@people.org'
         date:
@@ -2492,7 +2571,7 @@ components:
         id:
           type: string
           example: "my.sim.example97"
-        shortdesc:
+        description:
           type: string
           example : 'This is a new simulator'
         contributors :        
@@ -2517,32 +2596,40 @@ components:
           type: string
           example: 'https://my.fluidhub.org/git/simulators/sim.example.7'
         git_branches:
+          $ref: '#/components/schemas/GitBranches'
+
+    ElementGitBranch:
+      type: object
+      properties:
+        name:
+          type: string
+        details:
+          $ref: '#/components/schemas/ElementGitBranchDetails'
+        commits:
           type: array
           items:
-            $ref: '#/components/schemas/WareGitBranchDetails'
+            $ref: '#/components/schemas/GitCommitDetails'
 
-    WareGitBranchDetails:
-      allOf:
-        - $ref: '#/components/schemas/GitBranchDetails'
-        - type: object
-          properties:
-            tags:
-              type: array
-              items:
-                type: string
-              example: ['water','atmosphere','surface']
-            contacts:
-              type: array
-              items:
-                type: string
-              example: ['pierre@people.org','marianne@users.org']
-            license:
-              type: string
-              example: 'GPL-3.0'
-            issues:
-              type: array
-              items:
-                $ref: '#/components/schemas/WareGitIssueDetails'
+    ElementGitBranchDetails:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            type: string
+          example: ['water','atmosphere','surface']
+        contacts:
+          type: array
+          items:
+            type: string
+          example: ['pierre@people.org','marianne@users.org']
+        license:
+          type: string
+          example: 'GPL-3.0'
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/WareGitIssueDetails'
         
     WareGitIssueDetails:
       type: object
@@ -2553,7 +2640,7 @@ components:
         title:
           type: string
           example: 'Important feature'
-        creator-name:
+        creator:
           type: string
           example: 'Maxime'
         date:
@@ -2604,7 +2691,7 @@ components:
           type : string
       example:
         my.obs.example42 : 
-          shortdesc : "my observer as an example"
+          description : "my observer as an example"
           git_url : ""
           ware_url : ""
           git_branches : ["openfluid-2.0","openfluid-2.1"]
@@ -2616,7 +2703,7 @@ components:
           users-rw : []
           
         my.obs.example123 : 
-          shortdesc : "my observer as another example"
+          description : "my observer as another example"
           ware_url : ""
           git_url : ""
           git_branches : ["openfluid-2.1"]
@@ -2645,7 +2732,7 @@ components:
     DatasetInfo:
       type: object
       properties:
-        shortdesc:
+        description:
           type: string
           example: "This dataset ..."
 
@@ -2656,10 +2743,8 @@ components:
           $ref: '#/components/schemas/UsersROlist'
         users-rw:
           $ref: '#/components/schemas/UsersRWlist'
-        git-branches:
-          type: array
-          items:
-            $ref: '#/components/schemas/GitBranchDetails'
+        git_branches:
+          $ref: '#/components/schemas/GitBranches'
 
 
     Workspace:
@@ -2885,7 +2970,4 @@ components:
 #        application/json:
 #          schema:
 #           $ref: '#/components/schemas/Dataset'
-
-
-
 
